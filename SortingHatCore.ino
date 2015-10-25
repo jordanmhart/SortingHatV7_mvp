@@ -19,11 +19,17 @@ int redPin;
 int greenPin;
 int yellowPin;
 int whitePin;
+
 unsigned long redEyeTimeout = 0;
 unsigned long greenEyeTimeout = 0;
 unsigned long yellowEyeTimeout = 0;
 unsigned long whiteEyeTimeout = 0;
 
+unsigned long lastBlinkUpdate = 0;
+bool greenEyesBlinking = false;
+bool whiteEyesBlinking = false;
+
+//Core Logic
 void sort_setup() {
   Serial.begin(38400);
   mouth.setup();
@@ -40,10 +46,14 @@ void sort_loop() {
 }
 
 void question(){
+  mouth.talk(3000);
 }
 
 void thinking(){
-  mouth.talk(3000);
+  eyebrows_setLeftFor(140, 3000);
+  eyebrows_setRightFor(100, 3000);
+  eyeBlink_greenFor(3000);
+  eye_whiteFor(3000);
 }
 
 void gryffindor(){
@@ -72,7 +82,7 @@ void hufflepuff(){
   eyebrows_setLeftFor(140, 3000);
   eyebrows_setRightFor(100, 3000);
   eye_greenFor(3000);
-  eye_whiteFor(3000);
+  eyeBlink_whiteFor(3000);
 }
 
 //void stopExpressions(){
@@ -141,10 +151,21 @@ void eyes_setup(int red, int green, int yellow, int white) {
 void eyes_update() {
   unsigned long now = millis();
 
+  if(greenEyesBlinking){
+    if(now > lastBlinkUpdate + 500){
+      digitalWrite(greenPin, !digitalRead(greenPin));
+      lastBlinkUpdate = now;
+    }
+  }
+
+  if(whiteEyesBlinking){
+    if(now > lastBlinkUpdate + 500){
+      digitalWrite(whitePin, !digitalRead(whitePin));
+      lastBlinkUpdate = now;
+    }
+  }
+
   if (redEyeTimeout != 0 && now > redEyeTimeout) {
-    Serial.print(now);
-    Serial.print("red eye timeout: ");
-    Serial.println(redEyeTimeout);
     digitalWrite(redPin, LOW);
     redEyeTimeout = 0;
   }
@@ -152,6 +173,7 @@ void eyes_update() {
   if (greenEyeTimeout != 0 && now > greenEyeTimeout) {
     digitalWrite(greenPin, LOW);
     greenEyeTimeout = 0;
+    greenEyesBlinking = false;
   }
 
   if (yellowEyeTimeout != 0 && now > yellowEyeTimeout) {
@@ -162,6 +184,7 @@ void eyes_update() {
   if (whiteEyeTimeout != 0 && now > whiteEyeTimeout) {
     digitalWrite(whitePin, LOW);
     whiteEyeTimeout = 0;
+    whiteEyesBlinking = false;
   }
 }
 
@@ -183,5 +206,19 @@ void eye_yellowFor(unsigned long duration) {
 void eye_whiteFor(unsigned long duration) {
   digitalWrite(whitePin, HIGH);
   whiteEyeTimeout = millis() + duration;
+}
+
+void eyeBlink_greenFor(unsigned long duration) {
+  digitalWrite(greenPin, HIGH);
+  greenEyeTimeout = millis() + duration;
+  lastBlinkUpdate = millis();
+  greenEyesBlinking = true;
+}
+
+void eyeBlink_whiteFor(unsigned long duration) {
+  digitalWrite(whitePin, HIGH);
+  whiteEyeTimeout = millis() + duration;
+  lastBlinkUpdate = millis();
+  whiteEyesBlinking = true;
 }
 
