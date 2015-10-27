@@ -33,6 +33,15 @@ unsigned long redEyeTimeout = 0;
 unsigned long greenEyeTimeout = 0;
 unsigned long yellowEyeTimeout = 0;
 unsigned long whiteEyeTimeout = 0;
+unsigned long redEyeStartTimeout = 0;
+unsigned long greenEyeStartTimeout = 0;
+unsigned long yellowEyeStartTimeout = 0;
+unsigned long whiteEyeStartTimeout = 0;
+
+bool redEyeDone = true;
+bool greenEyeDone = true;
+bool yellowEyeDone = true;
+bool whiteEyeDone = true;
 
 unsigned long lastBlinkUpdate = 0;
 bool greenEyesBlinking = false;
@@ -55,45 +64,50 @@ void sort_loop() {
 }
 
 void question(){
-  mouth.talk(3000);
+  mouth.talk(11300);
+  eye_whiteFor(11300);
+  eyebrows_setLeftFor(80, 4000);
+  eyebrows_setRightFor(160, 4000);
+  eyebrows_setLeftForAfter(120, 4000, 5000);
+  eyebrows_setRightForAfter(110, 4500, 5500);
 }
 
 void thinking(){
-  eyebrows_setLeftFor(140, 1000);
-  eyebrows_setRightFor(100, 1000);
-  eyebrows_setLeftForAfter(80, 1000, 3000);
+  eyebrows_setLeftFor(140, 2000);
+  eyebrows_setRightFor(100, 4000);
+  eyebrows_setLeftForAfter(80, 3000, 3000);
   eyebrows_setRightForAfter(150, 1500, 4500);
-  eyeBlink_greenFor(6000);
-  eye_whiteFor(6000);
+  eyeBlink_greenFor(5000);
+  eye_whiteFor(7000);
 }
 
 void gryffindor(){
-  mouth.talk(3000);
-  eyebrows_setLeftFor(120, 3000);
-  eyebrows_setRightFor(110, 3000);
-  eye_greenFor(3000);
+  mouth.talk(6400);
+  eyebrows_setLeftFor(120, 5000);
+  eyebrows_setRightFor(110, 6000);
+  eye_greenFor(6400);
 }
 
 void slytherin(){
-  mouth.talk(3000);
-  eyebrows_setLeftFor(80, 3000);
-  eyebrows_setRightFor(160, 3000);
-  eye_redFor(3000);
+  mouth.talk(7500);
+  eyebrows_setLeftFor(80, 5000);
+  eyebrows_setRightFor(160, 5000);
+  eye_redFor(7500);
 }
 
 void ravenclaw(){
-  mouth.talk(3000);
-  eyebrows_setLeftFor(140, 3000);
-  eyebrows_setRightFor(100, 3000);
-  eye_whiteFor(3000);
+  mouth.talk(3600);
+  eyebrows_setLeftFor(140, 3600);
+  eyebrows_setRightFor(100, 3600);
+  eye_whiteFor(3600);
 }
 
 void hufflepuff(){
-  mouth.talk(3000);
-  eyebrows_setLeftFor(140, 3000);
-  eyebrows_setRightFor(100, 3000);
-  eye_greenFor(3000);
-  eyeBlink_whiteFor(3000);
+  mouth.talk(6600);
+  eyebrows_setLeftFor(140, 6600);
+  eyebrows_setRightFor(100, 6600);
+  eye_greenFor(6600);
+  eyeBlink_whiteFor(6600);
 }
 
 //void stopExpressions(){
@@ -212,25 +226,45 @@ void eyes_update() {
     }
   }
 
+  if (redEyeStartTimeout != 0 && now > redEyeStartTimeout) {
+    digitalWrite(redPin, HIGH);
+    redEyeStartTimeout = 0;
+  }
   if (redEyeTimeout != 0 && now > redEyeTimeout) {
     digitalWrite(redPin, LOW);
     redEyeTimeout = 0;
+    redEyeDone = true;
   }
 
+  if (greenEyeStartTimeout != 0 && now > greenEyeStartTimeout) {
+    digitalWrite(greenPin, HIGH);
+    greenEyeStartTimeout = 0;
+  }
   if (greenEyeTimeout != 0 && now > greenEyeTimeout) {
     digitalWrite(greenPin, LOW);
     greenEyeTimeout = 0;
+    greenEyeDone = true;
     greenEyesBlinking = false;
   }
 
+  if (yellowEyeStartTimeout != 0 && now > yellowEyeStartTimeout) {
+    digitalWrite(yellowPin, HIGH);
+    yellowEyeStartTimeout = 0;
+  }
   if (yellowEyeTimeout != 0 && now > yellowEyeTimeout) {
     digitalWrite(yellowPin, LOW);
     yellowEyeTimeout = 0;
+    yellowEyeDone = true;
   }
 
+  if (whiteEyeStartTimeout != 0 && now > whiteEyeStartTimeout) {
+    digitalWrite(whitePin, HIGH);
+    whiteEyeStartTimeout = 0;
+  }
   if (whiteEyeTimeout != 0 && now > whiteEyeTimeout) {
     digitalWrite(whitePin, LOW);
     whiteEyeTimeout = 0;
+    whiteEyeDone = true;
     whiteEyesBlinking = false;
   }
 }
@@ -238,21 +272,45 @@ void eyes_update() {
 void eye_redFor(unsigned long duration) {
   digitalWrite(redPin, HIGH);
   redEyeTimeout = millis() + duration;
+  redEyeDone = false;
+}
+void eye_redForAfter(unsigned long duration, unsigned long waitTime) {
+  redEyeStartTimeout = millis() + waitTime;
+  redEyeTimeout = redEyeStartTimeout + duration;
+  redEyeDone = false;
 }
 
 void eye_greenFor(unsigned long duration) {
   digitalWrite(greenPin, HIGH);
   greenEyeTimeout = millis() + duration;
+  greenEyeDone = false;
+}
+void eye_greenForAfter(unsigned long duration, unsigned long waitTime) {
+  greenEyeStartTimeout = millis() + waitTime;
+  greenEyeTimeout = greenEyeStartTimeout + duration;
+  greenEyeDone = false;
 }
 
 void eye_yellowFor(unsigned long duration) {
   digitalWrite(yellowPin, HIGH);
   yellowEyeTimeout = millis() + duration;
+  yellowEyeDone = false;
+}
+void eye_yellowForAfter(unsigned long duration, unsigned long waitTime) {
+  yellowEyeStartTimeout = millis() + waitTime;
+  yellowEyeTimeout = yellowEyeStartTimeout + duration;
+  yellowEyeDone = false;
 }
 
 void eye_whiteFor(unsigned long duration) {
   digitalWrite(whitePin, HIGH);
   whiteEyeTimeout = millis() + duration;
+  whiteEyeDone = false;
+}
+void eye_whiteForAfter(unsigned long duration, unsigned long waitTime) {
+  whiteEyeStartTimeout = millis() + waitTime;
+  whiteEyeTimeout = whiteEyeStartTimeout + duration;
+  whiteEyeDone = false;
 }
 
 void eyeBlink_greenFor(unsigned long duration) {
